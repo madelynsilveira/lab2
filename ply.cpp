@@ -112,7 +112,7 @@ void ply::loadGeometry() {
 
 		string line;
 		char * token_pointer;
-		char * lineCopy = new char[80];
+		char * lineCopy = new char[256];
 		int count;
 		bool reading_header = true;
 		// loop for reading the header 
@@ -225,28 +225,34 @@ Precondition: after all the vetices and faces have been loaded in
 Postcondition: points have reasonable values
 =============================================== */
 void ply::scaleAndCenter() {
-	glm::vec3 avrg(0.0f, 0.0f, 0.0f);
-	float max = 0.0;
-	int i;
+    glm::vec3 avrg(0.0f, 0.0f, 0.0f);
+    float max = 0.0;
+    int i, j;
 
-	//loop through each vertex in the given image
-	for (i = 0; i < vertexCount; i++) {
+    //loop through each vertex in the given image
+    for (i = 0; i < vertexCount; i++) {
+        // obtain the total for each property of the vertex
+        avrg = avrg + vertexList[i]->position;
+    }
+    
+    // compute the average for each property
+    avrg = avrg / (float)vertexCount;
+    
+    // obtain the max dimension to find the furthest point from 0,0
+    for (i = 0; i < vertexCount; i++) {
+        vertexList[i]->position = vertexList[i]->position - avrg;
+        for (j = 0; j < 3; j++) {
+            if (max < fabs(vertexList[i]->position[j]))
+            max = fabs(vertexList[i]->position[j]);
+        }
+    }
 
-		// obtain the total for each property of the vertex
-		avrg = avrg + vertexList[i]->position;
+    max *= 2.0f;
 
-		// obtain the max dimension to find the furthest point from 0,0
-		if (max < fabs(vertexList[i]->position.x)) max = fabs(vertexList[i]->position.x);
-		if (max < fabs(vertexList[i]->position.y)) max = fabs(vertexList[i]->position.y);
-		if (max < fabs(vertexList[i]->position.z)) max = fabs(vertexList[i]->position.z);
-	}
-	// compute the average for each property
-	avrg = avrg / (float)vertexCount;
-
-	// center and scale each vertex 
-	for (i = 0; i < vertexCount; i++) {
-		vertexList[i]->position = (vertexList[i]->position - avrg) / max;
-	}
+    // center and scale each vertex 
+    for (i = 0; i < vertexCount; i++) {
+        vertexList[i]->position = (vertexList[i]->position) / max;
+    }
 }
 
 /*  ===============================================
@@ -327,61 +333,121 @@ void ply::findEdges() {
 	//edges, if you want to use this data structure
 	//TODO add all the edges to the edgeList and make sure they have both faces
 	// v1 v2 f1 f2
-	face1;
-	face2;
+	face *face1;
+	face *face2;
+    edge *new_edge, *existing_edge;
+    bool edge_already_exists;
+    vector<edge> all_edges;
 	// create a loop to go through each fac_ in faceList
+    printf("Total number of faces: %d\n", faceCount);
+
 	for (int i = 0; i < faceCount; i++) {
 		face1 = faceList[i];
-		for (int j = i+1; j < faceCount; j++) {
+        // printf("here1\n");
+		for (int j = i+1; j < faceCount-1; j++) {
 			face2 = faceList[j];
-			
+            // printf("here2\n");
+    
+            cout << "i,j: " << i << "," << j << "\n";
+
 			// vertexList of each 'face' contains indices of vertices
 			// can just check if indices are the same
 
 			// find -> beginning of array, end fo array, int to find, returns idx of int to find if found
 			bool share0, share1, share2;
-			share0 = find(begin(face1.vertexList), end(face1.vertexList), face2.vertexList[0]) != end(face1.vertexList);
-			share1 = find(begin(face1.vertexList), end(face1.vertexList), face2.vertexList[1]) != end(face1.vertexList);
-			share2 = find(begin(face1.vertexList), end(face1.vertexList), face2.vertexList[2]) != end(face1.vertexList);
+			share0 = find(begin(face1->vertexList), end(face1->vertexList), face2->vertexList[0]) != end(face1->vertexList);
+			share1 = find(begin(face1->vertexList), end(face1->vertexList), face2->vertexList[1]) != end(face1->vertexList);
+			share2 = find(begin(face1->vertexList), end(face1->vertexList), face2->vertexList[2]) != end(face1->vertexList);
 
-			// see if the faces share an edge
+			// faces share edge composed of face2->vertexList[0] and face2->vertexList[1]
 			if (share0 && share1) {
-				edge e = new edge;
-				e.vertices[0] = face2.vertexList[0]
-				e.vertices[1] = face2.vertexList[1]
-				e.faces[0] = face1
-				e.faces[1] = face2
+				new_edge = new edge();
+				new_edge->vertices[0] = face2->vertexList[0];
+				new_edge->vertices[1] = face2->vertexList[1];
+				new_edge->faces[0] = i; // index of face1
+				new_edge->faces[1] = j; // index of face2
 				
 				// check that edge does not exist in edgeList
-				for (int i = 0; i < edgeCount; i++){
-					// call edge class equality function
+                edge_already_exists = false;
+				for (int k = 0; k < edgeCount; k++){
+                    existing_edge = &all_edges[k];
+
+                    // call edge class equality function
+                    if (existing_edge->equals(*new_edge)) {
+                        edge_already_exists = true;
+                        break;
+                    }
+				}
+
+                if (edge_already_exists) {delete new_edge;}
+                else {
+                    all_edges.push_back(*new_edge);
+                    edgeCount++;
+                }
+			}
+
+            // faces share edge composed of face2->vertexList[0] and face2->vertexList[2]
+			if (share0 && share2) {
+				new_edge = new edge();
+				new_edge->vertices[0] = face2->vertexList[0];
+				new_edge->vertices[1] = face2->vertexList[2];
+				new_edge->faces[0] = i; // index of face1
+				new_edge->faces[1] = j; // index of face2
 				
-					// need a way to compare edges
+				// check that edge does not exist in edgeList
+                edge_already_exists = false;
+				for (int k = 0; k < edgeCount; k++){
+                    existing_edge = &all_edges[k];
+
+                    // call edge class equality function
+                    if (existing_edge->equals(*new_edge)) {
+                        edge_already_exists = true;
+                        break;
+                    }
 				}
 
+                if (edge_already_exists) {delete new_edge;}
+                else {
+                    all_edges.push_back(*new_edge);
+                    edgeCount++;
+                }
 			}
-			
-			
-			|| (share0 && share2) || (share1 && share2)) {
-				for (int i = 0; i < edgeList; i++) {
-					edge new_edge = edgeList[i].vertices[0]
 
-					edgeList[i].vertices[0] == v
+            // faces share edge composed of face2->vertexList[1] and face2->vertexList[2]
+			if (share1 && share2) {
+				new_edge = new edge();
+				new_edge->vertices[0] = face2->vertexList[1];
+				new_edge->vertices[1] = face2->vertexList[2];
+				new_edge->faces[0] = i; // index of face1
+				new_edge->faces[1] = j; // index of face2
+				
+				// check that edge does not exist in edgeList
+                edge_already_exists = false;
+				for (int k = 0; k < edgeCount; k++){
+                    existing_edge = &all_edges[k];
+
+                    // call edge class equality function
+                    if (existing_edge->equals(*new_edge)) {
+                        edge_already_exists = true;
+                        break;
+                    }
 				}
+
+                if (edge_already_exists) {delete new_edge;}
+                else {
+                    all_edges.push_back(*new_edge);
+                    edgeCount++;
+                }
 			}
-			
-			
-			face1.vertexList[0] 
 		}
 	}
-
-}
-
-// checks if int i in list y[]
-void ply::inList(int x, int y []) {
-	for (int i = 0; i < y.length(); i++) {
-		if (x == y)
-	}
+    
+    // populate edgeList with all edges
+    edgeList = new edge*[edgeCount];
+    for(int i = 0; i < edgeCount; i++){
+        edge *ptr = &all_edges[i];
+        edgeList[i] = ptr;
+    }
 }
 
 
