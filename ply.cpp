@@ -323,14 +323,14 @@ void ply::computeFrontFace(glm::vec3 lookVector) {
 	//TODO: given the input lookVector, figure out which of the faces is front facing (fronFace == 1)
 	cout << "in front face!\n";
     
-    // float dot_product;
+    float dot_product;
     
-    // for (int i = 0; i < faceCount; i++) {
-	// 	dot_product = glm::dot(lookVector, faceList[i]->faceNormal);
+    for (int i = 0; i < faceCount; i++) {
+		dot_product = glm::dot(lookVector, faceList[i]->faceNormal);
         
-    //     if (dot_product < 0) {faceList[i]->frontFace = 1;}
-    //     else {faceList[i]->frontFace = 0;}
-	// }
+        if (dot_product < 0) {faceList[i]->frontFace = 1;}
+        else {faceList[i]->frontFace = 0;}
+	}
 }
 
 
