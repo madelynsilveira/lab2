@@ -54,8 +54,8 @@ public:
             if (this->vertices[0] != e.vertices[1] && this->vertices[1] != e.vertices[1]) {return false;}
             
             // are these needed?
-            if (this->faces[0] != e.faces[0] && this->faces[1] != e.faces[0]) {return false;}
-            if (this->faces[0] != e.faces[1] && this->faces[1] != e.faces[1]) {return false;}
+            // if (this->faces[0] != e.faces[0] && this->faces[1] != e.faces[0]) {return false;}
+            // if (this->faces[0] != e.faces[1] && this->faces[1] != e.faces[1]) {return false;}
 
             return true;
         }
