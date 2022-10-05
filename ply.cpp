@@ -321,10 +321,16 @@ void ply::renderNormal() {
 
 void ply::computeFrontFace(glm::vec3 lookVector) {
 	//TODO: given the input lookVector, figure out which of the faces is front facing (fronFace == 1)
-	int i;
-	for (i = 0; i < faceCount; i++) {
-		faceList[i]->frontFace = 0;
-	}
+	cout << "in front face!\n";
+    
+    // float dot_product;
+    
+    // for (int i = 0; i < faceCount; i++) {
+	// 	dot_product = glm::dot(lookVector, faceList[i]->faceNormal);
+        
+    //     if (dot_product < 0) {faceList[i]->frontFace = 1;}
+    //     else {faceList[i]->frontFace = 0;}
+	// }
 }
 
 
@@ -343,12 +349,11 @@ void ply::findEdges() {
 
 	for (int i = 0; i < faceCount; i++) {
 		face1 = faceList[i];
-        // printf("here1\n");
+
 		for (int j = i+1; j < faceCount-1; j++) {
 			face2 = faceList[j];
-            // printf("here2\n");
     
-            cout << "i,j: " << i << "," << j << "\n";
+            // cout << "i,j: " << i << "," << j << "\n";
 
 			// vertexList of each 'face' contains indices of vertices
 			// can just check if indices are the same
@@ -441,6 +446,8 @@ void ply::findEdges() {
 			}
 		}
 	}
+
+    printf("Populating edgeList with %d edges!\n", edgeCount);
     
     // populate edgeList with all edges
     edgeList = new edge*[edgeCount];
@@ -460,10 +467,33 @@ void ply::renderSilhouette(glm::vec3 lookVector) {
 	glPushMatrix();
 	glBegin(GL_LINES);
 
-	int i;
+	cout << "in render!\n";
+    // cout << "edge count: " << edgeCount << '\n\n';
+    // for (int i = 0; i < edgeCount; i++) {
+    //     // if frontFace values are not equal, they are either [1,0] or [0,1]
+    //     // in either case, one face is front-facing and the other is back-facing, so we draw
+    //     cout << i << "\n";
+        
+    //     int face1_idx = edgeList[i]->faces[0];
+    //     // cout << "here: " << face1_idx << "\n";
+    //     int face2_idx = edgeList[i]->faces[1];
+    //     // cout << "here2: " << face2_idx << "\n";
 
-	for (i = 0; i < edgeCount; i++) {
-	}
+    //     int face1_front = faceList[face1_idx]->frontFace;
+    //     // cout << "here3\n";
+    //     int face2_front = faceList[face2_idx]->frontFace;
+    //     // cout << "here4\n";
+
+
+    //     if (face1_front != face2_front) {
+    //         // cout << "here5\n";
+    //         vertex *vertex1 = vertexList[edgeList[i]->vertices[0]];
+    //         vertex *vertex2 = vertexList[edgeList[i]->vertices[1]];
+            
+    //         glVertex3f(vertex1->position[0], vertex1->position[1], vertex1->position[2]);
+    //         glVertex3f(vertex2->position[0], vertex2->position[1], vertex2->position[2]);
+    //     }
+    // }
 
 	glEnd();
 	glPopMatrix();
