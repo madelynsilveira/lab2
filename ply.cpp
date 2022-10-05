@@ -320,9 +320,7 @@ void ply::renderNormal() {
 }
 
 void ply::computeFrontFace(glm::vec3 lookVector) {
-	//TODO: given the input lookVector, figure out which of the faces is front facing (fronFace == 1)
-	cout << "in front face!\n";
-    
+	//TODO: given the input lookVector, figure out which of the faces is front facing (fronFace == 1)    
     float dot_product;
     
     for (int i = 0; i < faceCount; i++) {
@@ -338,7 +336,6 @@ void ply::computeFrontFace(glm::vec3 lookVector) {
 void ply::findEdges() {
 	//edges, if you want to use this data structure
 	//TODO add all the edges to the edgeList and make sure they have both faces
-	// v1 v2 f1 f2
 	face *face1;
 	face *face2;
     edge *old_edge;
@@ -440,8 +437,6 @@ void ply::findEdges() {
 			}
 		}
 	}
-
-    printf("Populating edgeList with %d edges!\n", edgeCount);
     
     // populate edgeList with all edges
     edgeList = new edge*[edgeCount];
@@ -460,19 +455,15 @@ void ply::renderSilhouette(glm::vec3 lookVector) {
 	glPushMatrix();
 	glBegin(GL_LINES);
 
-	cout << "in render!\n";
-    cout << "edge count: " << edgeCount << '\n\n';
     for (int i = 0; i < edgeCount; i++) {
         // if frontFace values are not equal, they are either [1,0] or [0,1]
         // in either case, one face is front-facing and the other is back-facing, so we draw
-        cout << i << "\n";
         
         int face1_idx = edgeList[i]->faces[0];
         int face2_idx = edgeList[i]->faces[1];
 
         int face1_front = faceList[face1_idx]->frontFace;
         int face2_front = faceList[face2_idx]->frontFace;
-
 
         if (face1_front != face2_front) {
             vertex *vertex1 = vertexList[edgeList[i]->vertices[0]];
