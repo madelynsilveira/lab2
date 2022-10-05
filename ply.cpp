@@ -341,24 +341,18 @@ void ply::findEdges() {
 	// v1 v2 f1 f2
 	face *face1;
 	face *face2;
-    edge *new_edge, *existing_edge;
+    edge *old_edge;
     bool edge_already_exists;
-    vector<edge> all_edges;
-	// create a loop to go through each fac_ in faceList
-    printf("Total number of faces: %d\n", faceCount);
+    vector<edge*> edge_vector;
 
+	// create a loop to go through each face in faceList
 	for (int i = 0; i < faceCount; i++) {
 		face1 = faceList[i];
 
 		for (int j = i+1; j < faceCount-1; j++) {
 			face2 = faceList[j];
-    
-            // cout << "i,j: " << i << "," << j << "\n";
 
-			// vertexList of each 'face' contains indices of vertices
-			// can just check if indices are the same
-
-			// find -> beginning of array, end fo array, int to find, returns idx of int to find if found
+			// find -> beginning of array, end of array, int to find, returns idx of int to find if found
 			bool share0, share1, share2;
 			share0 = find(begin(face1->vertexList), end(face1->vertexList), face2->vertexList[0]) != end(face1->vertexList);
 			share1 = find(begin(face1->vertexList), end(face1->vertexList), face2->vertexList[1]) != end(face1->vertexList);
@@ -366,7 +360,7 @@ void ply::findEdges() {
 
 			// faces share edge composed of face2->vertexList[0] and face2->vertexList[1]
 			if (share0 && share1) {
-				new_edge = new edge();
+				edge *new_edge = new edge();
 				new_edge->vertices[0] = face2->vertexList[0];
 				new_edge->vertices[1] = face2->vertexList[1];
 				new_edge->faces[0] = i; // index of face1
@@ -375,10 +369,10 @@ void ply::findEdges() {
 				// check that edge does not exist in edgeList
                 edge_already_exists = false;
 				for (int k = 0; k < edgeCount; k++){
-                    existing_edge = &all_edges[k];
+                    old_edge = edge_vector[k];
 
                     // call edge class equality function
-                    if (existing_edge->equals(*new_edge)) {
+                    if (old_edge->equals(*new_edge)) {
                         edge_already_exists = true;
                         break;
                     }
@@ -386,14 +380,14 @@ void ply::findEdges() {
 
                 if (edge_already_exists) {delete new_edge;}
                 else {
-                    all_edges.push_back(*new_edge);
+                    edge_vector.push_back(new_edge);
                     edgeCount++;
                 }
 			}
 
             // faces share edge composed of face2->vertexList[0] and face2->vertexList[2]
 			if (share0 && share2) {
-				new_edge = new edge();
+				edge *new_edge = new edge();
 				new_edge->vertices[0] = face2->vertexList[0];
 				new_edge->vertices[1] = face2->vertexList[2];
 				new_edge->faces[0] = i; // index of face1
@@ -402,10 +396,10 @@ void ply::findEdges() {
 				// check that edge does not exist in edgeList
                 edge_already_exists = false;
 				for (int k = 0; k < edgeCount; k++){
-                    existing_edge = &all_edges[k];
+                    old_edge = edge_vector[k];
 
                     // call edge class equality function
-                    if (existing_edge->equals(*new_edge)) {
+                    if (old_edge->equals(*new_edge)) {
                         edge_already_exists = true;
                         break;
                     }
@@ -413,14 +407,14 @@ void ply::findEdges() {
 
                 if (edge_already_exists) {delete new_edge;}
                 else {
-                    all_edges.push_back(*new_edge);
+                    edge_vector.push_back(new_edge);
                     edgeCount++;
                 }
 			}
 
             // faces share edge composed of face2->vertexList[1] and face2->vertexList[2]
 			if (share1 && share2) {
-				new_edge = new edge();
+				edge *new_edge = new edge();
 				new_edge->vertices[0] = face2->vertexList[1];
 				new_edge->vertices[1] = face2->vertexList[2];
 				new_edge->faces[0] = i; // index of face1
@@ -429,10 +423,10 @@ void ply::findEdges() {
 				// check that edge does not exist in edgeList
                 edge_already_exists = false;
 				for (int k = 0; k < edgeCount; k++){
-                    existing_edge = &all_edges[k];
+                    old_edge = edge_vector[k];
 
                     // call edge class equality function
-                    if (existing_edge->equals(*new_edge)) {
+                    if (old_edge->equals(*new_edge)) {
                         edge_already_exists = true;
                         break;
                     }
@@ -440,7 +434,7 @@ void ply::findEdges() {
 
                 if (edge_already_exists) {delete new_edge;}
                 else {
-                    all_edges.push_back(*new_edge);
+                    edge_vector.push_back(new_edge);
                     edgeCount++;
                 }
 			}
@@ -452,8 +446,7 @@ void ply::findEdges() {
     // populate edgeList with all edges
     edgeList = new edge*[edgeCount];
     for(int i = 0; i < edgeCount; i++){
-        edge *ptr = &all_edges[i];
-        edgeList[i] = ptr;
+        edgeList[i] = edge_vector[i];
     }
 }
 
@@ -468,32 +461,26 @@ void ply::renderSilhouette(glm::vec3 lookVector) {
 	glBegin(GL_LINES);
 
 	cout << "in render!\n";
-    // cout << "edge count: " << edgeCount << '\n\n';
-    // for (int i = 0; i < edgeCount; i++) {
-    //     // if frontFace values are not equal, they are either [1,0] or [0,1]
-    //     // in either case, one face is front-facing and the other is back-facing, so we draw
-    //     cout << i << "\n";
+    cout << "edge count: " << edgeCount << '\n\n';
+    for (int i = 0; i < edgeCount; i++) {
+        // if frontFace values are not equal, they are either [1,0] or [0,1]
+        // in either case, one face is front-facing and the other is back-facing, so we draw
+        cout << i << "\n";
         
-    //     int face1_idx = edgeList[i]->faces[0];
-    //     // cout << "here: " << face1_idx << "\n";
-    //     int face2_idx = edgeList[i]->faces[1];
-    //     // cout << "here2: " << face2_idx << "\n";
+        int face1_idx = edgeList[i]->faces[0];
+        int face2_idx = edgeList[i]->faces[1];
 
-    //     int face1_front = faceList[face1_idx]->frontFace;
-    //     // cout << "here3\n";
-    //     int face2_front = faceList[face2_idx]->frontFace;
-    //     // cout << "here4\n";
+        int face1_front = faceList[face1_idx]->frontFace;
+        int face2_front = faceList[face2_idx]->frontFace;
 
 
-    //     if (face1_front != face2_front) {
-    //         // cout << "here5\n";
-    //         vertex *vertex1 = vertexList[edgeList[i]->vertices[0]];
-    //         vertex *vertex2 = vertexList[edgeList[i]->vertices[1]];
-            
-    //         glVertex3f(vertex1->position[0], vertex1->position[1], vertex1->position[2]);
-    //         glVertex3f(vertex2->position[0], vertex2->position[1], vertex2->position[2]);
-    //     }
-    // }
+        if (face1_front != face2_front) {
+            vertex *vertex1 = vertexList[edgeList[i]->vertices[0]];
+            vertex *vertex2 = vertexList[edgeList[i]->vertices[1]]; 
+            glVertex3f(vertex1->position[0], vertex1->position[1], vertex1->position[2]);
+            glVertex3f(vertex2->position[0], vertex2->position[1], vertex2->position[2]);
+        }
+    }
 
 	glEnd();
 	glPopMatrix();
